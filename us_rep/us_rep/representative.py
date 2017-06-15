@@ -3,7 +3,7 @@
 from us_rep import *
 
 
-class Representatives(object):
+class Representative(object):
 
     def __init__(self,
                  first_name=None,
