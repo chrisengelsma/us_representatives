@@ -6,13 +6,29 @@ from pprint import pprint
 from us_rep.util import *
 from us_rep.us_rep import *
 
-url0 = 'https://en.wikipedia.org/wiki/List_of_former_United_States_Senators'
+base_url = 'https://en.wikipedia.org/wiki/'
+url0 = base_url + 'List_of_former_United_States_Senators'
+url1 = base_url + 'List_of_current_United_States_Senators'
 letters = [chr(ord('a') + i).upper() for i in range(26)]
 name_endings = ['Jr.', 'Sr.', 'II', 'III']
 
 
 def run():
-    senators = get_former_senators()
+    senators = [get_former_senators(), get_current_senators()]
+    write_to_json(senators, "senators.json")
+
+
+def get_current_senators():
+    soup_page = get_soup(url1)
+    senators = []
+    table = soup_page.find(id='Senators').parent.next_sibling.next_sibling
+    for tr in table.find_all('tr'):
+        tds = tr.find_all('td')
+        if len(tds) == 0:
+            continue
+        sen = parse_current_senator(tds)
+        senators.append(sen)
+    return senators
 
 
 def get_former_senators():
@@ -30,13 +46,28 @@ def get_former_senators():
             if len(tds) == 0:
                 continue
 
-            sen = parse_senator(tds)
+            sen = parse_former_senator(tds)
             senators.append(sen)
-            write_to_json(sen)
     return senators
 
 
-def parse_senator(tds):
+def parse_current_senator(tds):
+    state = state_abbrev(tds[1].text)
+    party = tds[5].text
+    year_start = tds[9].text.split(' ')[-1]
+    year_end = ''
+    term = [Term(year_start=year_start,
+                 year_end=year_end,
+                 state=state,
+                 party=party)]
+    name = parse_name(tds[4].find('a').text)
+    return Senator(first_name=name[0],
+                   middle_name=name[1],
+                   last_name=name[2],
+                   terms=term)
+
+
+def parse_former_senator(tds):
     name = parse_name(tds[0].text)
     terms = parse_terms(tds[1].text, tds[4].text, tds[3].text)
     sen = Senator(first_name=name[0],

@@ -19,8 +19,11 @@ def get_soup(url):
     return BeautifulSoup(html, 'html5lib')
 
 
-def write_to_json(rep):
-    pprint(CustomEncoder().encode(rep))
+def write_to_json(obj, fname):
+    print "Saving ", fname, "...",
+    with open(fname, 'wb') as outfile:
+        json.dump(obj, outfile, cls=CustomEncoder)
+    print "done"
 
 
 class CustomEncoder(json.JSONEncoder):
