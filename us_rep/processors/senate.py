@@ -35,8 +35,6 @@ def get_former_senators():
     soup_page = get_soup(url0)
     senators = []
     for l in letters:
-        if l == 'A':
-            continue
         span = soup_page.find(id=l)
         if span is None:
             continue
